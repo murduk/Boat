@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#123250" />
+  <title>17ft Deck Boat — Docking Simulator</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <canvas id="sim"></canvas>
+
+  <div id="hud" class="hud">
+    <div id="hud-left" class="hud-block"></div>
+    <div id="hud-engine" class="hud-block engine"></div>
+  </div>
+
+  <div id="top-bar" class="top-bar">
+    <button type="button" id="btn-reset" class="bar-btn">Reset</button>
+    <button type="button" id="btn-helm-mode" class="bar-btn">Hold</button>
+    <button type="button" id="btn-env" class="bar-btn">Wind</button>
+    <button type="button" id="btn-help" class="bar-btn">Help</button>
+    <button type="button" id="btn-follow" class="bar-btn hidden">Follow</button>
+  </div>
+
+  <div id="env-panel" class="env-panel hidden">
+    <label>
+      Wind <span id="wind-kt">0.0</span> kt
+      <input type="range" id="wind-speed" min="0" max="20" step="0.5" value="0" />
+    </label>
+    <label>
+      Wind dir <span id="wind-dir">0</span>°
+      <input type="range" id="wind-dir-slider" min="0" max="360" step="5" value="0" />
+    </label>
+    <label>
+      Current <span id="curr-kt">0.0</span> kt
+      <input type="range" id="curr-speed" min="0" max="4" step="0.1" value="0" />
+    </label>
+    <label>
+      Current dir <span id="curr-dir">0</span>°
+      <input type="range" id="curr-dir-slider" min="0" max="360" step="5" value="0" />
+    </label>
+  </div>
+
+  <div id="controls" class="controls">
+    <div class="throttle-pad">
+      <span class="pad-label">THR</span>
+      <input type="range" id="throttle" class="vert-slider" min="0" max="100" step="1" value="0" orient="vertical" />
+      <span id="throttle-val" class="pad-val">0%</span>
+    </div>
+
+    <div class="gear-pad">
+      <button type="button" id="gear-fwd" class="gear-btn" data-gear="1">FWD</button>
+      <button type="button" id="gear-neu" class="gear-btn active" data-gear="0">N</button>
+      <button type="button" id="gear-rev" class="gear-btn" data-gear="-1">REV</button>
+    </div>
+
+    <div class="helm-pad">
+      <span class="pad-label">HELM</span>
+      <div class="helm-row">
+        <button type="button" id="helm-left" class="helm-btn">◀</button>
+        <input type="range" id="helm" class="helm-slider" min="-30" max="30" step="0.5" value="0" />
+        <button type="button" id="helm-right" class="helm-btn">▶</button>
+      </div>
+      <span id="helm-val" class="pad-val">0.0°</span>
+    </div>
+  </div>
+
+  <div id="help" class="help hidden">
+    <div class="help-card">
+      <h2>Controls</h2>
+      <ul>
+        <li><strong>Throttle</strong> — left slider (or W / S)</li>
+        <li><strong>Helm</strong> — right slider / ◀ ▶ (or A / D)</li>
+        <li><strong>Gear</strong> — FWD / N / REV (or E / Space / Q)</li>
+        <li><strong>Hold / Spring</strong> — rudder stays or centers</li>
+        <li><strong>Reset</strong> — R</li>
+        <li><strong>Pinch</strong> — zoom · <strong>drag</strong> — pan</li>
+      </ul>
+      <button type="button" id="help-close" class="bar-btn">Close</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
