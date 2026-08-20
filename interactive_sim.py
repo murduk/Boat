@@ -5,6 +5,7 @@ Controls
 --------
   W / S        : throttle up / down (0..100% of current gear)
   A / D        : helm left / right (rudder)
+  T            : toggle helm hold (rudder stays) / spring-to-center
   Q / E        : shift to reverse / forward (Space = neutral)
   Space        : neutral
   R            : reset
@@ -46,6 +47,7 @@ WARN_COLOR     = (250, 190,  80)
 DT = 1.0 / 100.0     # physics at 100 Hz
 FPS = 60             # rendering at 60 Hz — multiple physics steps per frame
 PIXELS_PER_M_DEFAULT = 18.0
+GRID_M = 5.0            # world-space grid spacing [m]
 
 KT_TO_MS = 0.514444
 
@@ -226,7 +228,8 @@ class HUD:
                                             20, bold=True)
         self.font_small = pygame.font.SysFont("consolas,menlo,dejavusansmono", 13)
 
-    def draw(self, surf, boat: Boat, env: Environment, show_help: bool):
+    def draw(self, surf, boat: Boat, env: Environment, show_help: bool,
+             helm_hold: bool = False):
         w, h = surf.get_size()
 
         # --- Top-left: state readout ---
@@ -275,7 +278,8 @@ class HUD:
         surf.blit(t, (14, h - 80))
 
         helm_deg = np.rad2deg(boat.helm)
-        t = self.font.render(f"HELM     {helm_deg:+5.1f}°", True, HUD_COLOR)
+        helm_mode = "HOLD" if helm_hold else "SPRING"
+        t = self.font.render(f"HELM     {helm_deg:+5.1f}°  {helm_mode}", True, HUD_COLOR)
         surf.blit(t, (14, h - 58))
 
         # Throttle bar
@@ -309,6 +313,7 @@ class HUD:
             "KEY CONTROLS",
             "  W / S    throttle up / down",
             "  A / D    helm left / right",
+            "  T        helm hold / spring-to-center",
             "  Q        shift to reverse",
             "  E        shift to forward",
             "  Space    neutral",
@@ -383,8 +388,8 @@ def main():
 
     def make_boat():
         b = Boat(env=env)
-        # Start a bit outside the slip, pointing toward it
-        b.state = np.array([-25.0, 18.0, 0.0, 0.0, 0.0, 0.0])
+        # Start on a grid intersection, outside the slip, heading +x
+        b.state = np.array([-5.0 * GRID_M, 4.0 * GRID_M, 0.0, 0.0, 0.0, 0.0])
         return b
 
     boat = make_boat()
@@ -392,6 +397,7 @@ def main():
     # Input state
     keys_held = set()
     show_help = True
+    helm_hold = False
     dragging = False
     drag_start = None
 
@@ -430,6 +436,8 @@ def main():
                     running = False
                 elif ev.key == pygame.K_h:
                     show_help = not show_help
+                elif ev.key == pygame.K_t:
+                    helm_hold = not helm_hold
                 elif ev.key == pygame.K_r:
                     boat = make_boat()
                     wake = Wake()
@@ -480,7 +488,7 @@ def main():
             set_helm_rate(frame_dt, -1); helm_active = True
         if pygame.K_d in keys_held:
             set_helm_rate(frame_dt, +1); helm_active = True
-        if not helm_active:
+        if not helm_active and not helm_hold:
             return_helm_to_center(frame_dt)
 
         # --- physics: multiple fixed-dt steps per frame ---
@@ -501,25 +509,24 @@ def main():
         screen.fill(BG_COLOR)
 
         # grid lines
-        grid_m = 5.0
         x0, y0 = cam.screen_to_world(0, WINDOW_H)
         x1, y1 = cam.screen_to_world(WINDOW_W, 0)
-        gx = math.floor(x0 / grid_m) * grid_m
+        gx = math.floor(x0 / GRID_M) * GRID_M
         while gx < x1:
             sx, _ = cam.world_to_screen(gx, 0)
             pygame.draw.line(screen, (30, 65, 95), (sx, 0), (sx, WINDOW_H), 1)
-            gx += grid_m
-        gy = math.floor(y0 / grid_m) * grid_m
+            gx += GRID_M
+        gy = math.floor(y0 / GRID_M) * GRID_M
         while gy < y1:
             _, sy = cam.world_to_screen(0, gy)
             pygame.draw.line(screen, (30, 65, 95), (0, sy), (WINDOW_W, sy), 1)
-            gy += grid_m
+            gy += GRID_M
 
         wake.draw(screen, cam, boat.t)
         scene.draw(screen, cam)
         draw_boat(screen, cam, boat)
         draw_velocity_vectors(screen, cam, boat)
-        hud.draw(screen, boat, env, show_help)
+        hud.draw(screen, boat, env, show_help, helm_hold)
 
         # Press-H-for-help hint when help is hidden
         if not show_help:
