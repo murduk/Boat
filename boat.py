@@ -52,10 +52,10 @@ class BoatParams:
     # --- Outboard / thrust ---
     T_bollard_fwd: float = 3300.0   # full-throttle bollard thrust forward [N]
     T_bollard_rev: float = 2200.0   # full-throttle bollard thrust reverse [N]
-    T_idle_fwd: float = 320.0       # idle-in-gear forward thrust [N]
-    T_idle_rev: float = 210.0       # idle-in-gear reverse thrust [N]
+    T_idle_fwd: float = 110.0       # idle-in-gear forward thrust [N] (~1 kt crawl)
+    T_idle_rev: float = 70.0        # idle-in-gear reverse thrust [N]
     u_max_full: float = 18.0        # thrust -> 0 speed at full throttle [m/s]
-    u_max_idle: float = 3.0         # thrust -> 0 speed at idle [m/s]
+    u_max_idle: float = 1.5         # thrust -> 0 speed at idle [m/s]
     max_helm: float = np.deg2rad(30.0)
     shift_delay: float = 0.5        # [s]
     throttle_tau: float = 0.8       # [s] RPM build-up time constant
